@@ -35,14 +35,14 @@ class Agent:
     def Solve(self, problem):
         if problem.problemType == "2x2" and "Problems B" in problem.problemSetName:
             ans = self.solve_2x2(problem)
-            if ans != -1:
+            if ans:
                 return ans
-        else:
-            return 1
+        return 4
 
     def solve_2x2(self, ravens_problem):
         problem = []
         choices = []
+        ans = 0
 
         for key, value in ravens_problem.figures.items():
             if key in ['A', 'B', 'C']:
@@ -50,26 +50,24 @@ class Agent:
             elif key in ['1', '2', '3', '4', '5', '6']:
                 choices.append(value)
 
-        check = self.is_A_to_C_rotated(problem[0], problem[1])
+        # A,B, C are same
+        if self.A_to_B_to_C_Same(problem[0], problem[1], problem[2]):
+            ans = self.find_similar_image(problem[0], choices)
+        # A and C are same
+        elif self.A_to_C_Same(problem[0], problem[2]):
+            ans = self.find_similar_image(problem[1], choices)
+            # A and B are same
+        elif self.A_to_B_Same(problem[0], problem[1]):
+            ans = self.find_similar_image(problem[2], choices)
 
-
-        # # If A == C
-        # if self.is_A_to_C_same(problem[0], problem[2]):
-        #     ans = self.choice_equal_to_B(problem[1], choices)
-
-        ans = self.choice_equal_to_B(problem[1], choices)
         if ans:
             return int(ans.name)
-        else:
-            return 4
-        pass
 
-    def choice_equal_to_B(self, problem_image, choice_images):
+    def find_similar_image(self, problem_image, choice_images):
         problem_image_array = self.convert_to_numpy_array(problem_image)
         for choice_image in choice_images:
             if numpy.array_equal(problem_image_array, self.convert_to_numpy_array(choice_image)):
                 return choice_image
-        return False
 
     def convert_to_numpy_array(self, value):
         img_array = []
@@ -78,19 +76,16 @@ class Agent:
             img_array = numpy.array(img)
         return img_array
 
-    def is_A_to_C_same(self, imageA, imageC):
-        isSame = numpy.array_equal(self.convert_to_numpy_array(imageA), self.convert_to_numpy_array(imageC))
-        return isSame
+    def A_to_B_to_C_Same(self, imageA, imageB, imageC):
+        imgA = self.convert_to_numpy_array(imageA)
+        imgB = self.convert_to_numpy_array(imageB)
+        imgC = self.convert_to_numpy_array(imageC)
+        if numpy.array_equal(imgA, imgB) and numpy.array_equal(imgB, imgC):
+            return True
+        return False
 
-    def is_A_to_C_rotated(self, imageA, imageC):
-        img = Image.open(imageC.visualFilename)
-        rotatedC = img.rotate(90)
+    def A_to_B_Same(self, imageA, imageB):
+        return numpy.array_equal(self.convert_to_numpy_array(imageA), self.convert_to_numpy_array(imageB))
 
-        isSame = numpy.array_equal(self.convert_to_numpy_array(imageA), numpy.array(rotatedC))
-
-        return isSame
-
-    def is_A_to_C_flipped(self, imageA, imageC):
-        flippedC = numpy.flip(self.convert_to_numpy_array(imageC), axis=1)
-        isFlipped = numpy.array_equal(self.convert_to_numpy_array(imageA), numpy.array(flippedC))
-        return isFlipped
+    def A_to_C_Same(self, imageA, imageC):
+        return numpy.array_equal(self.convert_to_numpy_array(imageA), self.convert_to_numpy_array(imageC))
