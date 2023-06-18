@@ -13,6 +13,8 @@ from PIL import Image
 import numpy
 import cv2
 
+from RavensFigure import RavensFigure
+
 
 class Agent:
     # The default constructor for your Agent. Make sure to execute any
@@ -37,7 +39,7 @@ class Agent:
             ans = self.solve_2x2(problem)
             if ans:
                 return ans
-        return 4
+        return 1
 
     def solve_2x2(self, ravens_problem):
         problem = []
@@ -54,17 +56,45 @@ class Agent:
         if self.A_to_B_to_C_Same(problem[0], problem[1], problem[2]):
             ans = self.find_similar_image(problem[0], choices)
         # A and C are same
-        elif self.A_to_C_Same(problem[0], problem[2]):
+        if self.A_to_C_Same(problem[0], problem[2]):
             ans = self.find_similar_image(problem[1], choices)
-            # A and B are same
-        elif self.A_to_B_Same(problem[0], problem[1]):
+        # A and B are same
+        if self.A_to_B_Same(problem[0], problem[1]):
             ans = self.find_similar_image(problem[2], choices)
+
+        # Rotate A to B 90 degree clockwise B = Rotated A 90 clockwise
+        if self.is_rotated_90_clockwise(problem[0], problem[1]):
+            ans = self.find_similar_image(self.rotate_image(problem[2], -90), choices)
+
+        # Rotate A to B 90 degree anti-clockwise
+        if self.is_rotated_90_anti_clockwise(problem[0], problem[1]):
+            ans = self.find_similar_image(self.rotate_image(problem[2], 90), choices)
+
+        # Rotate A to C 90 degree clockwise
+        if self.is_rotated_90_clockwise(problem[0], problem[2]):
+            ans = self.find_similar_image(self.rotate_image(problem[1], -90), choices)
+
+        # Rotate A to C 90 degree anti-clockwise
+        if self.is_rotated_90_anti_clockwise(problem[0], problem[2]):
+            ans = self.find_similar_image(self.rotate_image(problem[1], 90), choices)
+
+        # B = Flipped A FLIP_LEFT_RIGHT, ans = Flipped C Horizontal
+        if self.is_flipped(problem[0], problem[1], Image.FLIP_LEFT_RIGHT):
+            ans = self.find_similar_image(self.rotate_image(problem[2], Image.FLIP_LEFT_RIGHT), choices)
+
+        # B = Flipped A FLIP_TOP_BOTTOM Vertical
+        if self.is_flipped(problem[0], problem[1], Image.FLIP_TOP_BOTTOM):
+            ans = self.find_similar_image(self.rotate_image(problem[2], Image.FLIP_TOP_BOTTOM), choices)
 
         if ans:
             return int(ans.name)
 
     def find_similar_image(self, problem_image, choice_images):
-        problem_image_array = self.convert_to_numpy_array(problem_image)
+        if type(problem_image) is RavensFigure:
+            problem_image_array = self.convert_to_numpy_array(problem_image)
+        else:
+            problem_image_array = numpy.array(problem_image)
+
         for choice_image in choice_images:
             if numpy.array_equal(problem_image_array, self.convert_to_numpy_array(choice_image)):
                 return choice_image
@@ -89,3 +119,26 @@ class Agent:
 
     def A_to_C_Same(self, imageA, imageC):
         return numpy.array_equal(self.convert_to_numpy_array(imageA), self.convert_to_numpy_array(imageC))
+
+    def is_rotated_90_clockwise(self, imageA, imageB):
+        return numpy.array_equal(self.convert_to_numpy_array(imageB),
+                                 numpy.array(self.rotate_image(imageA, -90)))
+
+    def is_rotated_90_anti_clockwise(self, imageA, imageB):
+        return numpy.array_equal(self.convert_to_numpy_array(imageB),
+                                 numpy.array(self.rotate_image(imageA, 90)))
+
+    def rotate_image(self, problem_image, angle):
+        img = Image.open(problem_image.visualFilename)
+        rotated_image = img.rotate(angle)
+        return rotated_image
+
+    def flip_image(self, problem_image, direction):
+        img = Image.open(problem_image.visualFilename)
+        flipped_image = img.transpose(direction)
+        return flipped_image
+
+    def is_flipped(self, image1, image2, direction):
+        is_flipped = numpy.array_equal(self.convert_to_numpy_array(image2),
+                                       numpy.array(self.flip_image(image1, direction)))
+        return 1
