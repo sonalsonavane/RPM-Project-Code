@@ -36,9 +36,11 @@ class Agent:
     # Returning your answer as a string may cause your program to crash.
     def Solve(self, problem):
         if problem.problemType == "2x2" and "Problems B" in problem.problemSetName:
-            ans = self.solve_2x2(problem)
-            if ans:
-                return ans
+            if problem.name == "Basic Problem B-03":
+                ans = self.solve_2x2(problem)
+                if ans:
+                    return ans
+
         return 1
 
     def solve_2x2(self, ravens_problem):
@@ -52,6 +54,48 @@ class Agent:
             elif key in ['1', '2', '3', '4', '5', '6']:
                 choices.append(value)
 
+        print(self.A_to_B_to_C_Same(problem[0], problem[1], problem[2]))
+
+        # Rotate A to B 90 degree clockwise B = Rotated A 90 clockwise
+        if self.is_rotated_clockwise(problem[0], problem[1], -90):
+            ans = self.find_similar_image(self.rotate_image(problem[2], -90), choices)
+        elif self.is_rotated_clockwise(problem[0], problem[1], -180):
+            ans = self.find_similar_image(self.rotate_image(problem[2], -180), choices)
+        elif self.is_rotated_clockwise(problem[0], problem[1], -270):
+            ans = self.find_similar_image(self.rotate_image(problem[2], -270), choices)
+
+        # Rotate A to B 90 degree anti-clockwise
+        elif self.is_rotated_anti_clockwise(problem[0], problem[1], 90):
+            ans = self.find_similar_image(self.rotate_image(problem[2], 90), choices)
+        elif self.is_rotated_anti_clockwise(problem[0], problem[1], 180):
+            ans = self.find_similar_image(self.rotate_image(problem[2], 180), choices)
+        elif self.is_rotated_anti_clockwise(problem[0], problem[1], 270):
+            ans = self.find_similar_image(self.rotate_image(problem[2], 270), choices)
+
+        # Rotate A to C 90 degree clockwise
+        elif self.is_rotated_clockwise(problem[0], problem[2], -90):
+            ans = self.find_similar_image(self.rotate_image(problem[1], -90), choices)
+        elif self.is_rotated_clockwise(problem[0], problem[2], -180):
+            ans = self.find_similar_image(self.rotate_image(problem[1], -180), choices)
+        elif self.is_rotated_clockwise(problem[0], problem[2], -270):
+            ans = self.find_similar_image(self.rotate_image(problem[1], -270), choices)
+
+        # Rotate A to C 90 degree anti-clockwise
+        elif self.is_rotated_anti_clockwise(problem[0], problem[2], 90):
+            ans = self.find_similar_image(self.rotate_image(problem[1], 90), choices)
+        elif self.is_rotated_anti_clockwise(problem[0], problem[2], 180):
+            ans = self.find_similar_image(self.rotate_image(problem[1], 180), choices)
+        elif self.is_rotated_anti_clockwise(problem[0], problem[2], 270):
+            ans = self.find_similar_image(self.rotate_image(problem[1], 270), choices)
+
+        # B = Flipped A FLIP_LEFT_RIGHT, ans = Flipped C Horizontal
+        elif self.is_flipped(problem[0], problem[1], Image.FLIP_LEFT_RIGHT):
+            ans = self.find_similar_image(self.rotate_image(problem[2], Image.FLIP_LEFT_RIGHT), choices)
+
+        # B = Flipped A FLIP_TOP_BOTTOM Vertical
+        elif self.is_flipped(problem[0], problem[1], Image.FLIP_TOP_BOTTOM):
+            ans = self.find_similar_image(self.rotate_image(problem[2], Image.FLIP_TOP_BOTTOM), choices)
+
         # A,B, C are same
         if self.A_to_B_to_C_Same(problem[0], problem[1], problem[2]):
             ans = self.find_similar_image(problem[0], choices)
@@ -61,30 +105,6 @@ class Agent:
         # A and B are same
         if self.A_to_B_Same(problem[0], problem[1]):
             ans = self.find_similar_image(problem[2], choices)
-
-        # Rotate A to B 90 degree clockwise B = Rotated A 90 clockwise
-        if self.is_rotated_90_clockwise(problem[0], problem[1]):
-            ans = self.find_similar_image(self.rotate_image(problem[2], -90), choices)
-
-        # Rotate A to B 90 degree anti-clockwise
-        if self.is_rotated_90_anti_clockwise(problem[0], problem[1]):
-            ans = self.find_similar_image(self.rotate_image(problem[2], 90), choices)
-
-        # Rotate A to C 90 degree clockwise
-        if self.is_rotated_90_clockwise(problem[0], problem[2]):
-            ans = self.find_similar_image(self.rotate_image(problem[1], -90), choices)
-
-        # Rotate A to C 90 degree anti-clockwise
-        if self.is_rotated_90_anti_clockwise(problem[0], problem[2]):
-            ans = self.find_similar_image(self.rotate_image(problem[1], 90), choices)
-
-        # B = Flipped A FLIP_LEFT_RIGHT, ans = Flipped C Horizontal
-        if self.is_flipped(problem[0], problem[1], Image.FLIP_LEFT_RIGHT):
-            ans = self.find_similar_image(self.rotate_image(problem[2], Image.FLIP_LEFT_RIGHT), choices)
-
-        # B = Flipped A FLIP_TOP_BOTTOM Vertical
-        if self.is_flipped(problem[0], problem[1], Image.FLIP_TOP_BOTTOM):
-            ans = self.find_similar_image(self.rotate_image(problem[2], Image.FLIP_TOP_BOTTOM), choices)
 
         if ans:
             return int(ans.name)
@@ -96,7 +116,7 @@ class Agent:
             problem_image_array = numpy.array(problem_image)
 
         for choice_image in choice_images:
-            if numpy.array_equal(problem_image_array, self.convert_to_numpy_array(choice_image)):
+            if self.compare_images(problem_image_array, self.convert_to_numpy_array(choice_image)) < 0.5:
                 return choice_image
 
     def convert_to_numpy_array(self, value):
@@ -109,24 +129,25 @@ class Agent:
     def A_to_B_to_C_Same(self, imageA, imageB, imageC):
         imgA = self.convert_to_numpy_array(imageA)
         imgB = self.convert_to_numpy_array(imageB)
-        imgC = self.convert_to_numpy_array(imageC)
-        if numpy.array_equal(imgA, imgB) and numpy.array_equal(imgB, imgC):
+        # imgC = self.convert_to_numpy_array(imageC)
+        if self.compare_images(imgA, imgB) < 0.4:
             return True
         return False
 
     def A_to_B_Same(self, imageA, imageB):
-        return numpy.array_equal(self.convert_to_numpy_array(imageA), self.convert_to_numpy_array(imageB))
+        return self.compare_images(self.convert_to_numpy_array(imageA), self.convert_to_numpy_array(imageB)) < 0.4
 
     def A_to_C_Same(self, imageA, imageC):
-        return numpy.array_equal(self.convert_to_numpy_array(imageA), self.convert_to_numpy_array(imageC))
+        return self.compare_images(self.convert_to_numpy_array(imageA), self.convert_to_numpy_array(imageC)) < 0.4
 
-    def is_rotated_90_clockwise(self, imageA, imageB):
-        return numpy.array_equal(self.convert_to_numpy_array(imageB),
-                                 numpy.array(self.rotate_image(imageA, -90)))
+    def is_rotated_clockwise(self, imageA, imageB, angle):
+        is_rotated_clockwise = self.compare_images(self.convert_to_numpy_array(imageB),
+                                                   numpy.array(self.rotate_image(imageA, angle))) < 0.5
+        return is_rotated_clockwise
 
-    def is_rotated_90_anti_clockwise(self, imageA, imageB):
-        return numpy.array_equal(self.convert_to_numpy_array(imageB),
-                                 numpy.array(self.rotate_image(imageA, 90)))
+    def is_rotated_anti_clockwise(self, imageA, imageB, angle):
+        return self.compare_images(self.convert_to_numpy_array(imageB),
+                                   numpy.array(self.rotate_image(imageA, angle))) < 0.5
 
     def rotate_image(self, problem_image, angle):
         img = Image.open(problem_image.visualFilename)
@@ -139,6 +160,12 @@ class Agent:
         return flipped_image
 
     def is_flipped(self, image1, image2, direction):
-        is_flipped = numpy.array_equal(self.convert_to_numpy_array(image2),
-                                       numpy.array(self.flip_image(image1, direction)))
-        return 1
+        # is_flipped = numpy.array_equal(self.convert_to_numpy_array(image2),
+        #                                numpy.array(self.flip_image(image1, direction)))
+        is_flipped = self.compare_images(self.convert_to_numpy_array(image2),
+                                         numpy.array(self.flip_image(image1, direction))) < 0.5
+        return is_flipped
+
+    def compare_images(self, image1, image2):
+        mse = numpy.mean((image1 - image2) ** 2)
+        return mse
