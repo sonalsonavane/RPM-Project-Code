@@ -52,20 +52,56 @@ class Agent:
 
         if self.is_A_B_C_Same(problem[0], problem[1], problem[2]):
             val = self.find_solution(problem[0], choices)
-            return int(val.name)
+            if val is not None:
+                return int(val.name)
         elif self.is_A_C_Same(problem[0], problem[2]):
             val = self.find_solution(problem[1], choices)
-            return int(val.name)
+            if val is not None:
+                return int(val.name)
         elif self.is_A_B_Same(problem[0], problem[1]):
             val = self.find_solution(problem[2], choices)
-            return int(val.name)
+            if val is not None:
+                return int(val.name)
+        # B -> Rotated Version of A
+        elif self.is_rotated(problem[0], problem[1]) != 0:
+            angle = self.is_rotated(problem[0], problem[1])
+            rotated_image = self.rotate(problem[1], angle)
+            val = self.find_rotated_solution(rotated_image, choices)
+            if val is not None:
+                return int(val.name)
+        elif self.is_rotated(problem[0], problem[2]) != 0:
+            angle = self.is_rotated(problem[0], problem[2])
+            rotated_image = self.rotate(problem[1], angle)
+            val = self.find_rotated_solution(rotated_image, choices)
+            if val is not None:
+                return int(val.name)
+        elif self.is_vertically_flipped(problem[0], problem[1]):
+            flipped_image_c = self.flip_image(problem[2], 0)
+            val = self.find_flipped_solution(flipped_image_c, choices)
+            if val is not None:
+                return int(val.name)
+        elif self.is_vertically_flipped(problem[0], problem[2]):
+            flipped_image_b = self.flip_image(problem[1], 0)
+            val = self.find_flipped_solution(flipped_image_b, choices)
+            if val is not None:
+                return int(val.name)
+        elif self.is_horizontally_flipped(problem[0], problem[1]):
+            flipped_image_c = self.flip_image(problem[2], 1)
+            val = self.find_flipped_solution(flipped_image_c, choices)
+            if val is not None:
+                return int(val.name)
+        elif self.is_horizontally_flipped(problem[0], problem[2]):
+            flipped_image_b = self.flip_image(problem[1], 1)
+            val = self.find_flipped_solution(flipped_image_b, choices)
+            if val is not None:
+                return int(val.name)
         else:
-            return 4
+            return 1
 
     def is_A_B_C_Same(self, imageA, imageB, imageC):
-        is_A_to_B = self.compare_images(self.convert_to_numpy_array(imageA), self.convert_to_numpy_array(imageB)) < 0.5
-        is_B_to_C = self.compare_images(self.convert_to_numpy_array(imageB), self.convert_to_numpy_array(imageC)) < 0.5
-        is_A_to_C = self.compare_images(self.convert_to_numpy_array(imageA), self.convert_to_numpy_array(imageC)) < 0.5
+        is_A_to_B = self.compare_images(self.convert_to_numpy_array(imageA), self.convert_to_numpy_array(imageB)) < 0.2
+        is_B_to_C = self.compare_images(self.convert_to_numpy_array(imageB), self.convert_to_numpy_array(imageC)) < 0.2
+        is_A_to_C = self.compare_images(self.convert_to_numpy_array(imageA), self.convert_to_numpy_array(imageC)) < 0.2
         is_A_B_C_Same = is_A_to_B and is_B_to_C and is_A_to_C
         return is_A_B_C_Same
 
@@ -82,6 +118,16 @@ class Agent:
             if self.compare_images(self.convert_to_numpy_array(image), self.convert_to_numpy_array(choice_image)) < 0.2:
                 return choice_image
 
+    def find_rotated_solution(self, image, choices):
+        for choice_image in choices:
+            if self.compare_images(numpy.array(image), self.convert_to_numpy_array(choice_image)) <= 0.4:
+                return choice_image
+
+    def find_flipped_solution(self, image, choices):
+        for choice_image in choices:
+            if self.compare_images(image, self.convert_to_numpy_array(choice_image)) < 0.2:
+                return choice_image
+
     def convert_to_numpy_array(self, value):
         img_array = []
         img = Image.open(value.visualFilename)
@@ -92,3 +138,35 @@ class Agent:
     def compare_images(self, image1, image2):
         mse = numpy.mean((image1 - image2) ** 2)
         return mse
+
+    def is_rotated(self, image1, image2):
+        angles = [90, 180, 270, -45, -90, -180, -270]
+        img1 = Image.open(image1.visualFilename)
+        img2 = Image.open(image2.visualFilename)
+        for angle in angles:
+            rotated_image = img1.rotate(angle)
+            if self.compare_images(numpy.array(rotated_image), numpy.array(img2)) <= 0.4:
+                return angle
+            else:
+                return 0
+
+    def rotate(self, image, angle):
+        img = Image.open(image.visualFilename)
+        rotated_img = img.rotate(angle)
+        return rotated_img
+
+    def is_vertically_flipped(self, image1, image2):
+        is_vertically_flipped = self.compare_images(self.flip_image(image1, 0),
+                                                    self.convert_to_numpy_array(image2)) < 0.2
+        return is_vertically_flipped
+
+    def is_horizontally_flipped(self, image1, image2):
+        is_horizontally_flipped = self.compare_images(self.flip_image(image1, 1),
+                                                      self.convert_to_numpy_array(image2)) < 0.2
+        return is_horizontally_flipped
+
+    # Horizontal axis=1, vertical, axis=0
+    def flip_image(self, image, direction):
+        img = self.convert_to_numpy_array(image)
+        flipped_image_array = numpy.flip(img, axis=direction)
+        return flipped_image_array
