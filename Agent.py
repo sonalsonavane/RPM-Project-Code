@@ -49,17 +49,37 @@ class Agent:
                 problem.append(value)
             elif key in ['1', '2', '3', '4', '5', '6']:
                 choices.append(value)
-        problem = self.load_images(problem)
-        choices = self.load_images(choices)
+        for i in range(2):
+            diff1 = self.get_pixel_difference(self.convert_to_numpy_array(problem[0]),
+                                              self.convert_to_numpy_array(problem[1]))
+            diff2 = self.get_pixel_difference(self.convert_to_numpy_array(problem[1]),
+                                              self.convert_to_numpy_array(problem[2]))
 
-        return 0
+        if diff1 < diff2:
+            target_image = self.convert_to_numpy_array(problem[0]) + self.convert_to_numpy_array(
+                problem[2]) - self.convert_to_numpy_array(problem[1])
+        else:
+            target_image = self.convert_to_numpy_array(problem[2]) + self.convert_to_numpy_array(
+                problem[1]) - self.convert_to_numpy_array(problem[0])
+
+        min_difference = float('inf')
+        best_option = None
+        for choice in choices:
+            option_image = Image.open(choice.visualFilename).convert("L")  # Convert to grayscale
+            option_array = numpy.array(option_image)
+            difference = self.get_pixel_difference(target_image, option_array)
+            if difference < min_difference:
+                min_difference = difference
+                best_option = choice
+
+        return int(best_option.name)
 
     def get_pixel_difference(self, image1, image2):
         return numpy.sum(numpy.abs(image1 - image2))
 
-    def load_images(self,images):
-        images = []
-        for image in images:
-            img = Image.open(image.visualFilename).convert("L")  # Convert to grayscale
-            images.append(numpy.array(img))
-        return images
+    def convert_to_numpy_array(self, value):
+        img_array = []
+        img = Image.open(value.visualFilename)
+        if img:
+            img_array = numpy.array(img)
+        return img_array
