@@ -50,26 +50,37 @@ class Agent:
             elif key in ['1', '2', '3', '4', '5', '6']:
                 choices.append(value)
 
-        check = self.is_A_to_C_rotated(problem[0], problem[1])
-
-
-        # # If A == C
-        # if self.is_A_to_C_same(problem[0], problem[2]):
-        #     ans = self.choice_equal_to_B(problem[1], choices)
-
-        ans = self.choice_equal_to_B(problem[1], choices)
-        if ans:
-            return int(ans.name)
+        if self.is_A_B_C_Same(problem[0], problem[1], problem[2]):
+            val = self.find_solution(problem[0], choices)
+            return int(val.name)
+        elif self.is_A_C_Same(problem[0], problem[2]):
+            val = self.find_solution(problem[1], choices)
+            return int(val.name)
+        elif self.is_A_B_Same(problem[0], problem[1]):
+            val = self.find_solution(problem[2], choices)
+            return int(val.name)
         else:
             return 4
-        pass
 
-    def choice_equal_to_B(self, problem_image, choice_images):
-        problem_image_array = self.convert_to_numpy_array(problem_image)
-        for choice_image in choice_images:
-            if numpy.array_equal(problem_image_array, self.convert_to_numpy_array(choice_image)):
+    def is_A_B_C_Same(self, imageA, imageB, imageC):
+        is_A_to_B = self.compare_images(self.convert_to_numpy_array(imageA), self.convert_to_numpy_array(imageB)) < 0.5
+        is_B_to_C = self.compare_images(self.convert_to_numpy_array(imageB), self.convert_to_numpy_array(imageC)) < 0.5
+        is_A_to_C = self.compare_images(self.convert_to_numpy_array(imageA), self.convert_to_numpy_array(imageC)) < 0.5
+        is_A_B_C_Same = is_A_to_B and is_B_to_C and is_A_to_C
+        return is_A_B_C_Same
+
+    def is_A_C_Same(self, imageA, imageC):
+        is_A_to_C = self.compare_images(self.convert_to_numpy_array(imageA), self.convert_to_numpy_array(imageC)) < 0.2
+        return is_A_to_C
+
+    def is_A_B_Same(self, imageA, imageB):
+        is_A_to_B = self.compare_images(self.convert_to_numpy_array(imageA), self.convert_to_numpy_array(imageB)) < 0.2
+        return is_A_to_B
+
+    def find_solution(self, image, choices):
+        for choice_image in choices:
+            if self.compare_images(self.convert_to_numpy_array(image), self.convert_to_numpy_array(choice_image)) < 0.2:
                 return choice_image
-        return False
 
     def convert_to_numpy_array(self, value):
         img_array = []
@@ -78,19 +89,6 @@ class Agent:
             img_array = numpy.array(img)
         return img_array
 
-    def is_A_to_C_same(self, imageA, imageC):
-        isSame = numpy.array_equal(self.convert_to_numpy_array(imageA), self.convert_to_numpy_array(imageC))
-        return isSame
-
-    def is_A_to_C_rotated(self, imageA, imageC):
-        img = Image.open(imageC.visualFilename)
-        rotatedC = img.rotate(90)
-
-        isSame = numpy.array_equal(self.convert_to_numpy_array(imageA), numpy.array(rotatedC))
-
-        return isSame
-
-    def is_A_to_C_flipped(self, imageA, imageC):
-        flippedC = numpy.flip(self.convert_to_numpy_array(imageC), axis=1)
-        isFlipped = numpy.array_equal(self.convert_to_numpy_array(imageA), numpy.array(flippedC))
-        return isFlipped
+    def compare_images(self, image1, image2):
+        mse = numpy.mean((image1 - image2) ** 2)
+        return mse
