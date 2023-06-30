@@ -33,43 +33,40 @@ class Agent:
     # Make sure to return your answer *as an integer* at the end of Solve().
     # Returning your answer as a string may cause your program to crash.
     def Solve(self, problem):
-        if problem.problemType == "2x2" and "Problems B" in problem.problemSetName:
-            ans = self.solve_2x2(problem)
+        if problem.problemType == "3x3" and "Problems C" in problem.problemSetName:
+            ans = self.solve_3x3(problem)
             if ans != -1:
                 return ans
         else:
             return 1
 
-    def solve_2x2(self, ravens_problem):
-        problem = []
-        choices = []
+    def solve_3x3(self, ravens_problem):
 
-        for key, value in ravens_problem.figures.items():
-            if key in ['A', 'B', 'C']:
-                problem.append(value)
-            elif key in ['1', '2', '3', '4', '5', '6']:
-                choices.append(value)
+        # Problem Images
+        imageA = self.convert_to_numpy_array(ravens_problem.figures['A'])
+        imageB = self.convert_to_numpy_array(ravens_problem.figures['B'])
+        imageC = self.convert_to_numpy_array(ravens_problem.figures['C'])
+        imageD = self.convert_to_numpy_array(ravens_problem.figures['D'])
+        imageE = self.convert_to_numpy_array(ravens_problem.figures['E'])
+        imageF = self.convert_to_numpy_array(ravens_problem.figures['F'])
+        imageG = self.convert_to_numpy_array(ravens_problem.figures['G'])
+        imageH = self.convert_to_numpy_array(ravens_problem.figures['H'])
 
-        check = self.is_A_to_C_rotated(problem[0], problem[1])
+        # option Images
+        option1 = self.convert_to_numpy_array(ravens_problem.figures['1'])
+        option2 = self.convert_to_numpy_array(ravens_problem.figures['2'])
+        option3 = self.convert_to_numpy_array(ravens_problem.figures['3'])
+        option4 = self.convert_to_numpy_array(ravens_problem.figures['4'])
+        option5 = self.convert_to_numpy_array(ravens_problem.figures['5'])
+        option6 = self.convert_to_numpy_array(ravens_problem.figures['6'])
+        option7 = self.convert_to_numpy_array(ravens_problem.figures['7'])
+        option8 = self.convert_to_numpy_array(ravens_problem.figures['8'])
+
+        for key, value in
 
 
-        # # If A == C
-        # if self.is_A_to_C_same(problem[0], problem[2]):
-        #     ans = self.choice_equal_to_B(problem[1], choices)
-
-        ans = self.choice_equal_to_B(problem[1], choices)
-        if ans:
-            return int(ans.name)
-        else:
-            return 4
+        return 1
         pass
-
-    def choice_equal_to_B(self, problem_image, choice_images):
-        problem_image_array = self.convert_to_numpy_array(problem_image)
-        for choice_image in choice_images:
-            if numpy.array_equal(problem_image_array, self.convert_to_numpy_array(choice_image)):
-                return choice_image
-        return False
 
     def convert_to_numpy_array(self, value):
         img_array = []
@@ -77,20 +74,3 @@ class Agent:
         if img:
             img_array = numpy.array(img)
         return img_array
-
-    def is_A_to_C_same(self, imageA, imageC):
-        isSame = numpy.array_equal(self.convert_to_numpy_array(imageA), self.convert_to_numpy_array(imageC))
-        return isSame
-
-    def is_A_to_C_rotated(self, imageA, imageC):
-        img = Image.open(imageC.visualFilename)
-        rotatedC = img.rotate(90)
-
-        isSame = numpy.array_equal(self.convert_to_numpy_array(imageA), numpy.array(rotatedC))
-
-        return isSame
-
-    def is_A_to_C_flipped(self, imageA, imageC):
-        flippedC = numpy.flip(self.convert_to_numpy_array(imageC), axis=1)
-        isFlipped = numpy.array_equal(self.convert_to_numpy_array(imageA), numpy.array(flippedC))
-        return isFlipped
