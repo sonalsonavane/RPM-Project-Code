@@ -1,5 +1,3 @@
-
-
 # Your Agent for solving Raven's Progressive Matrices. You MUST modify this file.
 #
 # You may also create and submit new files in addition to modifying this file.
@@ -42,54 +40,18 @@ class Agent:
         #         return ans
         if problem.problemType == "3x3" and "Basic Problem D" in problem.name:
             ans = self.solve_D_basic(problem)
-            if ans > -1:
+            if ans is not None and ans > -1:
                 return ans
             else:
                 return 1
         elif problem.problemType == "3x3" and "Basic Problem E" in problem.name:
             ans = self.solve_D_basic(problem)
-            if ans > -1:
+            if ans is not None and ans > -1:
                 return ans
             else:
-                return 1
+                return 4
         else:
             return 1
-
-    # def solve_3x3(self, ravens_problem):
-    #
-    #     # Problem Images
-    #     imageA = self.convert_to_numpy_array(ravens_problem.figures['A'])
-    #     imageB = self.convert_to_numpy_array(ravens_problem.figures['B'])
-    #     imageC = self.convert_to_numpy_array(ravens_problem.figures['C'])
-    #     imageD = self.convert_to_numpy_array(ravens_problem.figures['D'])
-    #     imageE = self.convert_to_numpy_array(ravens_problem.figures['E'])
-    #     imageF = self.convert_to_numpy_array(ravens_problem.figures['F'])
-    #     imageG = self.convert_to_numpy_array(ravens_problem.figures['G'])
-    #     imageH = self.convert_to_numpy_array(ravens_problem.figures['H'])
-    #
-    #     # choice Images
-    #     # option1 = self.convert_to_numpy_array(ravens_problem.figures['1'])
-    #     # option2 = self.convert_to_numpy_array(ravens_problem.figures['2'])
-    #     # option3 = self.convert_to_numpy_array(ravens_problem.figures['3'])
-    #     # option4 = self.convert_to_numpy_array(ravens_problem.figures['4'])
-    #     # option5 = self.convert_to_numpy_array(ravens_problem.figures['5'])
-    #     # option6 = self.convert_to_numpy_array(ravens_problem.figures['6'])
-    #     # option7 = self.convert_to_numpy_array(ravens_problem.figures['7'])
-    #     # option8 = self.convert_to_numpy_array(ravens_problem.figures['8'])
-    #
-    #     choices = []
-    #     problems = []
-    #
-    #     for key, value in ravens_problem.figures.items():
-    #         if key in ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']:
-    #             problems.append(value)
-    #         if key in ['1', '2', '3', '4', '5', '6']:
-    #             choices.append(value)
-    #
-    #     # for i in range(0, 8):
-    #     #     print("Test")
-    #
-    #     return 1
 
     def get_ravens_image(self, key, value):
         img = Image.open(value.figures[key].visualFilename)
@@ -105,17 +67,6 @@ class Agent:
         return img_array
 
     def solve_D_basic(self, ravens_problem):
-
-        # problems = []
-        # choices = []
-        #
-        # for key, value in ravens_problem.figures.items():
-        #     if key in ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']:
-        #         problems.append(value)
-        #     elif key in ['1', '2', '3', '4', '5', '6', '7', '8']:
-        #         choices.append(value)
-        # ans = self.knn_3x3(problems, choices)
-
         diagonal_comp = self.get_diagonal_comparison(ravens_problem)
 
         if diagonal_comp == -1:
@@ -124,7 +75,19 @@ class Agent:
                 return knn_3x3
             else:
                 dpr = self.dpr_knn_3_by_3(ravens_problem)
-                if dpr != -1:
+                if dpr == -1:
+                    logical_OR = self.get_logical_or_comparison(ravens_problem)
+                    if logical_OR == -1:
+                        logical_XOR = self.get_logical_xor_comparison(ravens_problem)
+                        if logical_XOR == -1:
+                            logical_and = self.get_logical_and_comparison(ravens_problem)
+                            if logical_and != -1:
+                                return logical_and
+                            else:
+                                return logical_XOR
+                    else:
+                        return logical_OR
+                else:
                     return dpr
         else:
             return diagonal_comp
@@ -160,11 +123,10 @@ class Agent:
             8: Option8
         }
 
-        knn_dpr_hor = 0
-        knn_dpr_ver = 0
-        knn_ipr_hor = 0
-        knn_ipr_ver = 0
-
+        # knn_dpr_hor = 0
+        # knn_dpr_ver = 0
+        # knn_ipr_hor = 0
+        # knn_ipr_ver = 0
         for i in range(1, 9):
             dpr_AB = self.get_dark_pixel_ratio(imageA, imageB)
             dpr_BC = self.get_dark_pixel_ratio(imageB, imageC)
@@ -186,22 +148,21 @@ class Agent:
 
             ipr_AB = self.get_intersection_pixel_ratio(imageA, imageB)
             ipr_BC = self.get_intersection_pixel_ratio(imageB, imageC)
-            # ipr_r1 = (ipr_AB + ipr_BC) / 2.0
+
             ipr_DE = self.get_intersection_pixel_ratio(imageD, imageE)
             ipr_EF = self.get_intersection_pixel_ratio(imageE, imageF)
-            # ipr_r2 = (ipr_DE + ipr_EF) / 2.0
+
             ipr_GH = self.get_intersection_pixel_ratio(imageG, imageH)
             ipr_Hi = self.get_intersection_pixel_ratio(imageH, options[i])
-            # ipr_r3 = (ipr_GH + ipr_Hi) / 2.0
+
             ipr_AD = self.get_intersection_pixel_ratio(imageA, imageD)
             ipr_DG = self.get_intersection_pixel_ratio(imageD, imageG)
-            # ipr_c1 = (ipr_AD + ipr_DG) / 2.0
+
             ipr_BE = self.get_intersection_pixel_ratio(imageB, imageE)
             ipr_EH = self.get_intersection_pixel_ratio(imageE, imageH)
-            # ipr_c2 = (ipr_BE + ipr_EH) / 2.0
+
             ipr_CF = self.get_intersection_pixel_ratio(imageC, imageF)
             ipr_Fi = self.get_intersection_pixel_ratio(imageF, options[i])
-            # ipr_c3 = (ipr_CF + ipr_Fi) / 2.0
 
             if i == 1:
                 knn_dpr_hor = numpy.array([numpy.sqrt(
@@ -256,25 +217,20 @@ class Agent:
                     )]
                 ])
 
-                knn = knn_dpr_hor + knn_dpr_ver + knn_ipr_hor + knn_ipr_ver
-                knn_norm = (knn - numpy.min(knn)) / (numpy.max(knn) - numpy.min(knn))
+        knn = knn_dpr_hor + knn_dpr_ver + knn_ipr_hor + knn_ipr_ver
+        knn_norm = (knn - numpy.min(knn)) / (numpy.max(knn) - numpy.min(knn))
+        knn_norm = 1 - knn_norm
 
-                # Align it from 0 to 1, with 1 being the most confident
-                knn_norm = 1 - knn_norm
-
-                if 1.0 - knn_norm[knn_norm.flatten().argsort()[-2:][0]] < 0.4:  # 10% percent
-                    return -1
-                else:
-                    return numpy.argmin(knn) + 1
-
+        if 1.0 - knn_norm[knn_norm.flatten().argsort()[-2:][0]] < 0.4:  # 10% percent
+            return -1
+        else:
+            return numpy.argmin(knn) + 1
         pass
 
     def solve_E_basic(self):
         pass
 
     def get_dark_pixel_ratio(self, imgX, imgY):
-        # X = self.convert_to_numpy_array(imgX)
-        # Y = self.convert_to_numpy_array(imgY)
         X = numpy.array(imgX)
         Y = numpy.array(imgY)
         dp_ratio_X = numpy.count_nonzero(X == 0) / float(X.size)
@@ -323,34 +279,25 @@ class Agent:
 
         return -1
 
-    def get_logical_xor_comparison(self):
-        pass
+    def get_logical_xor_comparison(self, problem):
 
-    def get_logical_or_comparison(self):
-        pass
+        imageA = self.get_inverted_image('A', problem)
+        imageB = self.get_inverted_image('B', problem)
+        imageC = self.get_inverted_image('C', problem)
+        imageD = self.get_inverted_image('D', problem)
+        imageE = self.get_inverted_image('E', problem)
+        imageF = self.get_inverted_image('F', problem)
+        imageG = self.get_inverted_image('G', problem)
+        imageH = self.get_inverted_image('H', problem)
 
-    def insert_image(self):
-        pass
-
-    def get_logical_and_comparison(self, problem):
-
-        figA = self.get_ravens_image('A', problem)
-        figB = self.get_ravens_image('B', problem)
-        figC = self.get_ravens_image('C', problem)
-        figD = self.get_ravens_image('D', problem)
-        figE = self.get_ravens_image('E', problem)
-        figF = self.get_ravens_image('F', problem)
-        figG = self.get_ravens_image('G', problem)
-        figH = self.get_ravens_image('H', problem)
-
-        Option1 = self.get_ravens_image('1', problem)
-        Option2 = self.get_ravens_image('2', problem)
-        Option3 = self.get_ravens_image('3', problem)
-        Option4 = self.get_ravens_image('4', problem)
-        Option5 = self.get_ravens_image('5', problem)
-        Option6 = self.get_ravens_image('6', problem)
-        Option7 = self.get_ravens_image('7', problem)
-        Option8 = self.get_ravens_image('8', problem)
+        Option1 = self.get_inverted_image('1', problem)
+        Option2 = self.get_inverted_image('2', problem)
+        Option3 = self.get_inverted_image('3', problem)
+        Option4 = self.get_inverted_image('4', problem)
+        Option5 = self.get_inverted_image('5', problem)
+        Option6 = self.get_inverted_image('6', problem)
+        Option7 = self.get_inverted_image('7', problem)
+        Option8 = self.get_inverted_image('8', problem)
 
         options = {
             1: Option1,
@@ -362,10 +309,130 @@ class Agent:
             7: Option7,
             8: Option8
         }
+
+        A_XOR_B = imageA._new(imageA.im.chop_xor(imageB.im))
+        D_XOR_E = imageD._new(imageD.im.chop_xor(imageE.im))
+        G_XOR_H = imageG._new(imageG.im.chop_xor(imageH.im))
+
+        A_OR_B_C_similarity = self.get_similarity_score(A_XOR_B, imageC)
+        D_OR_E_F_similarity = self.get_similarity_score(D_XOR_E, imageF)
+        if A_OR_B_C_similarity >= 90.0 and D_OR_E_F_similarity >= 90.0:
+            similarities = []
+            for i in range(1, 9):
+                similarities.append(self.get_similarity_score(G_XOR_H, options[i]))
+            return similarities.index(max(similarities)) + 1
+        else:
+            return -1
+
+    def get_logical_or_comparison(self, problem):
+
+        imageA = self.get_inverted_image('A', problem)
+        imageB = self.get_inverted_image('B', problem)
+        imageC = self.get_inverted_image('C', problem)
+        imageD = self.get_inverted_image('D', problem)
+        imageE = self.get_inverted_image('E', problem)
+        imageF = self.get_inverted_image('F', problem)
+        imageG = self.get_inverted_image('G', problem)
+        imageH = self.get_inverted_image('H', problem)
+
+        Option1 = self.get_inverted_image('1', problem)
+        Option2 = self.get_inverted_image('2', problem)
+        Option3 = self.get_inverted_image('3', problem)
+        Option4 = self.get_inverted_image('4', problem)
+        Option5 = self.get_inverted_image('5', problem)
+        Option6 = self.get_inverted_image('6', problem)
+        Option7 = self.get_inverted_image('7', problem)
+        Option8 = self.get_inverted_image('8', problem)
+
+        options = {
+            1: Option1,
+            2: Option2,
+            3: Option3,
+            4: Option4,
+            5: Option5,
+            6: Option6,
+            7: Option7,
+            8: Option8
+        }
+
+        A_OR_B = imageA._new(imageA.im.chop_or(imageB.im))
+        D_OR_E = imageD._new(imageD.im.chop_or(imageE.im))
+        G_OR_H = imageG._new(imageG.im.chop_or(imageH.im))
+
+        A_OR_B_C_similarity = self.get_similarity_score(A_OR_B, imageC)
+        D_OR_E_F_similarity = self.get_similarity_score(D_OR_E, imageF)
+        if A_OR_B_C_similarity >= 96.0 and D_OR_E_F_similarity >= 96.0:
+            similarities = []
+            for i in range(1, 9):
+                similarities.append(self.get_similarity_score(G_OR_H, options[i]))
+            return similarities.index(max(similarities)) + 1
+        else:
+            return -1
+
+    def insert_image(self):
         pass
 
-    def get_inverted_image(self, image):
-        img = Image.open(image.visualFilename)
+    def get_logical_and_comparison(self, problem):
+
+        imageA = self.get_inverted_image('A', problem)
+        imageB = self.get_inverted_image('B', problem)
+        imageC = self.get_inverted_image('C', problem)
+        imageD = self.get_inverted_image('D', problem)
+        imageE = self.get_inverted_image('E', problem)
+        imageF = self.get_inverted_image('F', problem)
+        imageG = self.get_inverted_image('G', problem)
+        imageH = self.get_inverted_image('H', problem)
+
+        Option1 = self.get_inverted_image('1', problem)
+        Option2 = self.get_inverted_image('2', problem)
+        Option3 = self.get_inverted_image('3', problem)
+        Option4 = self.get_inverted_image('4', problem)
+        Option5 = self.get_inverted_image('5', problem)
+        Option6 = self.get_inverted_image('6', problem)
+        Option7 = self.get_inverted_image('7', problem)
+        Option8 = self.get_inverted_image('8', problem)
+
+        options = {
+            1: Option1,
+            2: Option2,
+            3: Option3,
+            4: Option4,
+            5: Option5,
+            6: Option6,
+            7: Option7,
+            8: Option8
+        }
+
+        A_AND_B = ImageChops.logical_and(imageA, imageB)
+        A_AND_B_AND_C = ImageChops.logical_and(A_AND_B, imageC)
+        # D_AND_E = ImageChops.logical_and(imageD, imageE)
+        G_AND_H = ImageChops.logical_and(imageG, imageH)
+
+        similarities = []
+        for i in range(1, 9):
+            G_AND_H_AND_i = ImageChops.logical_and(G_AND_H, options[i])
+            similarities.append(self.get_similarity_score(A_AND_B_AND_C, G_AND_H_AND_i))
+
+        max1=0
+        max2=0
+        if similarities:
+            max1 = max(similarities)
+            print(max1, "max1")
+
+            max2 = 0
+            for i in similarities:
+                if i != max1:
+                    max2 = max(i, max2)
+            print(max2, "max2")
+        if max1 - max2 <= 2:
+            return similarities.index(max(similarities)) + 1
+        else:
+            return -1
+
+
+
+    def get_inverted_image(self, key, value):
+        img = Image.open(value.figures[key].visualFilename)
         img = img.convert('1')
         img = ImageChops.invert(img)
         return img
@@ -388,14 +455,6 @@ class Agent:
     def get_SSE(self, X, Y):
         X = X * (1.0 / X.max())
         Y = X * (1.0 / Y.max())
-
-        # intersection = numpy.sum(numpy.multiply(X, Y))
-        # union = numpy.sum(numpy.maximum(X, Y))
-        # X_minus_Y = numpy.sum(numpy.subtract(X, Y))
-        # Y_minus_X = numpy.sum(numpy.subtract(Y, X))
-        # X_equals_Y = intersection / union
-        # X_subset_Y = intersection / float(intersection + X_minus_Y)
-        # Y_subset_X = intersection / float(intersection + Y_minus_X)
 
         X = numpy.array(X, dtype=float64)
         Y = numpy.array(Y, dtype=float64)
@@ -433,8 +492,6 @@ class Agent:
             8: Option8
         }
 
-        # Use for loop (loop for each option) and calculate AB, C1 and AC, B1 for both metrics
-        # Each loop should give you 4 values
         # knn_dpr_hor = 0
         # knn_dpr_ver = 0
         # knn_ipr_hor = 0
@@ -482,13 +539,8 @@ class Agent:
         # Normalize data
         knn = knn_hor + knn_ver
         knn_norm = (knn - numpy.min(knn)) / (numpy.max(knn) - numpy.min(knn))
-
-        # Align it from 0 to 1, with 1 being the most confident
         knn_norm = 1 - knn_norm
-
-        # Check if the second highest confidence is close to the first. If so, ignore and continue to do other transformations
         if 1.0 - knn_norm[knn_norm.flatten().argsort()[-2:][0]] < 0.15:  # 1.8% percent
             return -1
         else:
             return numpy.argmin(knn) + 1
-
