@@ -9,9 +9,6 @@
 # These methods will be necessary for the project's main method to run.
 from PIL import Image
 import numpy
-import cv2
-
-import problem_b
 
 
 # Install Pillow and uncomment this line to access image processing.
