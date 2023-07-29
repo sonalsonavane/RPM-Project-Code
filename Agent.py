@@ -53,13 +53,16 @@ class Agent:
     # Make sure to return your answer *as an integer* at the end of Solve().
     # Returning your answer as a string may cause your program to crash.
     def Solve(self, problem):
-        # if problem.problemType == "2x2" and "Problems B" in problem.problemSetName and "Basic Problem B-04" in problem.name:
+        # if problem.problemType == "2x2" and "Problems B" in problem.problemSetName and "Basic Problem B-06" in problem.name:
         if problem.problemType == "2x2":
             ans = self.solve_problems_B(problem)
+            print(problem.name)
             print("ans is", ans)
-            print(ans is not None)
-            if ans and ans != 'None':
+            is_one = ans is None
+            if ans is not None:
                 return ans
+            else:
+                return 4
         else:
             ans = 1
             return ans
@@ -104,18 +107,19 @@ class Agent:
         elif transformation_a_c != -1:
             return self.map_transformation_to_options(transformation_a_c, self.imageB)
 
+
     def solve_problem_3x3(self):
         pass
 
     def find_image_transformation_2x2(self, image1, image2):
         if self.mse(numpy.array(image1), numpy.array(image2)) < 0.2:
             return 1
-        elif self.is_rotated(image1, image2) != -1:
-            return self.is_rotated(image1, image2)
-        elif self.is_flipped(image1, image2) != -1:
+        if self.is_flipped(image1, image2) != -1:
             return self.is_flipped(image1, image2)
-        else:
-            return -1
+        if self.is_rotated(image1, image2) != -1:
+            return self.is_rotated(image1, image2)
+
+        return -1
 
     def map_transformation_to_options(self, transformation, image):
 
@@ -152,7 +156,7 @@ class Agent:
         img = numpy.array(self.flip_image(image, axis))
         for option in options:
             option_img = numpy.array(option)
-            if self.mse(img, option_img) < 10:
+            if self.mse(img, option_img) <= 11:
                 return options.index(option) + 1
         # return -1
         pass
@@ -173,6 +177,8 @@ class Agent:
             print("mse value", self.mse(rotated_image, img2))
             if self.mse(rotated_image, img2) < 12:
                 return angle
+
+        return -1
 
     def is_flipped(self, image1, image2):
         horizontally_flipped_image1 = numpy.array(self.flip_image(image1, 1))
