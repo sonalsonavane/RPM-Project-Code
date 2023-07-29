@@ -125,8 +125,8 @@ class Agent:
         if self.is_similar_row_images(self.imageA, self.imageB, self.imageC):
             ans = self.find_horizontal_similar_image(self.mse(numpy.array(self.imageG), numpy.array(self.imageH)),
                                                      self.imageH, options)
-            print("3x3 similar image", ans)
 
+        print("3x3 similar image", ans)
         return ans
         pass
 
