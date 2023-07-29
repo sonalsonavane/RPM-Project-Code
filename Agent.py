@@ -56,16 +56,22 @@ class Agent:
     # Make sure to return your answer *as an integer* at the end of Solve().
     # Returning your answer as a string may cause your program to crash.
     def Solve(self, problem):
-        ans = -1
-        if problem.problemType == "2x2" and "Problems B" in problem.problemSetName and "Basic Problem B-03" in problem.name:
+        # if problem.problemType == "2x2" and "Problems B" in problem.problemSetName and "Basic Problem B-08" in problem.name:
+        if problem.problemType == "2x2":
             print(problem.name)
             ans = self.solve_problems_B(problem)
-        # elif problem.problemType == "3x3" and "Problems C" in problem.problemSetName:
-        #     print("This is Problem C", problem.problemSetName)
-        # elif problem.problemType == '3x3' and "Problems D" or "Problems E" in problem.problemSetName:
-        #     print("This is problem set D and E", problem.problemSetName)
+            if ans is not None:
+                return ans
 
-        return ans
+
+
+        # else:
+        #     return 2
+
+    # elif problem.problemType == "3x3" and "Problems C" in problem.problemSetName:
+    #     print("This is Problem C", problem.problemSetName)
+    # elif problem.problemType == '3x3' and "Problems D" or "Problems E" in problem.problemSetName:
+    #     print("This is problem set D and E", problem.problemSetName)
 
     def pre_process_images(self, ravens_problem, problem_type):
         # for key, value in ravens_problem.figures.items():
@@ -102,20 +108,19 @@ class Agent:
         # First Preprocess images
         self.pre_process_images(ravens_problem, "2x2")
 
-        print("Inside solve_problems_B")
-
         # check ImageA and Image B
-        print("Checking transformation between And B")
         transformation_a_b = self.find_image_transformation_2x2(self.imageA, self.imageB)
 
         if transformation_a_b != -1:
             ans = self.map_transformation_to_options(transformation_a_b, self.imageC)
             return ans
+
         else:
-            print("Checking transformation between A and C")
+
             transformation_a_c = self.find_image_transformation_2x2(self.imageA, self.imageC)
+
             if transformation_a_c != -1:
-                ans = self.map_transformation_to_options(transformation_a_b, self.imageC)
+                ans = self.map_transformation_to_options(transformation_a_c, self.imageB)
                 return ans
 
         pass
@@ -126,12 +131,10 @@ class Agent:
     def find_image_transformation_2x2(self, image1, image2):
         if self.mse(numpy.array(image1), numpy.array(image2)) < 0.2:
             return 1
-        elif self.is_flipped(image1, image2) != -1:
-            print("Inside flipped")
-            return self.is_flipped(image1, image2)
         elif self.is_rotated(image1, image2) != -1:
-            print("Inside rotated")
             return self.is_rotated(image1, image2)
+        elif self.is_flipped(image1, image2) != -1:
+            return self.is_flipped(image1, image2)
         else:
             return -1
 
@@ -172,6 +175,7 @@ class Agent:
         img = numpy.array(self.flip_image(image, axis))
         for option in options:
             option_img = numpy.array(option)
+            print("mse flip ", self.mse(img, option_img))
             if self.mse(img, option_img) < 10:
                 return options.index(option) + 1
         pass
@@ -199,11 +203,11 @@ class Agent:
         vertically_flipped_image1 = numpy.array(self.flip_image(image1, 0))
 
         print("vertical flipped", self.mse(vertically_flipped_image1, numpy.array(image2)))
-        print("horizontally flipped", self.mse(horizontally_flipped_image1, numpy.array(image2)) )
+        print("horizontally flipped", self.mse(horizontally_flipped_image1, numpy.array(image2)))
 
-        if self.mse(vertically_flipped_image1, numpy.array(image2)) < 10:
+        if self.mse(vertically_flipped_image1, numpy.array(image2)) < 75:
             return 2
-        elif self.mse(horizontally_flipped_image1, numpy.array(image2)) < 10:
+        elif self.mse(horizontally_flipped_image1, numpy.array(image2)) < 75:
             return 3
         else:
             return -1
