@@ -53,7 +53,7 @@ class Agent:
     # Make sure to return your answer *as an integer* at the end of Solve().
     # Returning your answer as a string may cause your program to crash.
     def Solve(self, problem):
-        # if problem.problemType == "2x2" and "Problems B" in problem.problemSetName and "Basic Problem B-01" in problem.name:
+        # if problem.problemType == "2x2" and "Problems B" in problem.problemSetName and "Basic Problem B-04" in problem.name:
         if problem.problemType == "2x2":
             ans = self.solve_problems_B(problem)
             print("ans is", ans)
@@ -169,9 +169,9 @@ class Agent:
         angles = [90, 180, 270, -45, -90, -180, -270]
         img2 = numpy.array(image2)
         for angle in angles:
-            rotated_image = numpy.array(image1.rotate(angle))
-            # print("mse value", self.mse(rotated_image, img2))
-            if self.mse(rotated_image, img2) <= 11:
+            rotated_image = numpy.array(self.rotate_image(image1, angle))
+            print("mse value", self.mse(rotated_image, img2))
+            if self.mse(rotated_image, img2) < 12:
                 return angle
 
     def is_flipped(self, image1, image2):
