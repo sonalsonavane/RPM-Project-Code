@@ -56,11 +56,20 @@ class Agent:
     # Make sure to return your answer *as an integer* at the end of Solve().
     # Returning your answer as a string may cause your program to crash.
     def Solve(self, problem):
-        # if problem.problemType == "2x2" and "Problems B" in problem.problemSetName and "Basic Problem B-08" in problem.name:
+        # if problem.problemType == "2x2" and "Problems B" in problem.problemSetName and "Basic Problem B-01" in problem.name:
         if problem.problemType == "2x2":
             ans = self.solve_problems_B(problem)
             print("ans is", ans)
+            print(ans is not None)
+            if ans and ans != 'None':
+                return ans
+        else:
+            ans = 1
             return ans
+        # if problem.problemType == "2x2":
+        #     ans = self.solve_problems_B(problem)
+        #     print("ans is", ans)
+        #     return ans
 
     # elif problem.problemType == "3x3" and "Problems C" in problem.problemSetName:
     #     print("This is Problem C", problem.problemSetName)
@@ -111,7 +120,6 @@ class Agent:
         pass
 
     def find_image_transformation_2x2(self, image1, image2):
-        print("self.is_flipped(image1, image2)", self.is_flipped(image1, image2))
         if self.mse(numpy.array(image1), numpy.array(image2)) < 0.2:
             return 1
         elif self.is_rotated(image1, image2) != -1:
