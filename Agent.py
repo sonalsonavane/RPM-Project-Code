@@ -56,9 +56,9 @@ class Agent:
         # if problem.problemType == "2x2" and "Problems B" in problem.problemSetName and "Basic Problem B-06" in problem.name:
         if problem.problemType == "2x2":
             ans = self.solve_problems_B(problem)
-            print(problem.name)
-            print("ans is", ans)
-            is_one = ans is None
+            # print(problem.name)
+            # print("ans is", ans)
+            # is_one = ans is None
             if ans is not None:
                 return ans
             else:
@@ -114,12 +114,15 @@ class Agent:
     def find_image_transformation_2x2(self, image1, image2):
         if self.mse(numpy.array(image1), numpy.array(image2)) < 0.2:
             return 1
-        if self.is_flipped(image1, image2) != -1:
+        elif self.is_flipped(image1, image2) != -1:
             return self.is_flipped(image1, image2)
-        if self.is_rotated(image1, image2) != -1:
+        elif self.is_rotated(image1, image2) != -1:
             return self.is_rotated(image1, image2)
+        else:
+            return -1
 
-        return -1
+
+        # return -1
 
     def map_transformation_to_options(self, transformation, image):
 
@@ -142,8 +145,8 @@ class Agent:
             ans = self.find_flipped_image(image, options, 1)
             return ans
             # flip images
-        else:
-            return 1
+        # else:
+        #     return 1
 
     def find_equal_image(self, image, options):
         img = numpy.array(image)
@@ -174,11 +177,10 @@ class Agent:
         img2 = numpy.array(image2)
         for angle in angles:
             rotated_image = numpy.array(self.rotate_image(image1, angle))
-            print("mse value", self.mse(rotated_image, img2))
-            if self.mse(rotated_image, img2) < 12:
+            if self.mse(rotated_image, img2) < 50:
                 return angle
 
-        return -1
+        # return -1
 
     def is_flipped(self, image1, image2):
         horizontally_flipped_image1 = numpy.array(self.flip_image(image1, 1))
