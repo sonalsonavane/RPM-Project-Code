@@ -58,15 +58,9 @@ class Agent:
     def Solve(self, problem):
         # if problem.problemType == "2x2" and "Problems B" in problem.problemSetName and "Basic Problem B-08" in problem.name:
         if problem.problemType == "2x2":
-            print(problem.name)
             ans = self.solve_problems_B(problem)
-            if ans is not None:
-                return ans
-
-
-
-        # else:
-        #     return 2
+            print("ans is", ans)
+            return ans
 
     # elif problem.problemType == "3x3" and "Problems C" in problem.problemSetName:
     #     print("This is Problem C", problem.problemSetName)
@@ -104,31 +98,20 @@ class Agent:
         pass
 
     def solve_problems_B(self, ravens_problem):
-
-        # First Preprocess images
         self.pre_process_images(ravens_problem, "2x2")
-
-        # check ImageA and Image B
         transformation_a_b = self.find_image_transformation_2x2(self.imageA, self.imageB)
+        transformation_a_c = self.find_image_transformation_2x2(self.imageA, self.imageC)
 
         if transformation_a_b != -1:
-            ans = self.map_transformation_to_options(transformation_a_b, self.imageC)
-            return ans
-
-        else:
-
-            transformation_a_c = self.find_image_transformation_2x2(self.imageA, self.imageC)
-
-            if transformation_a_c != -1:
-                ans = self.map_transformation_to_options(transformation_a_c, self.imageB)
-                return ans
-
-        pass
+            return self.map_transformation_to_options(transformation_a_b, self.imageC)
+        elif transformation_a_c != -1:
+            return self.map_transformation_to_options(transformation_a_c, self.imageB)
 
     def solve_problem_3x3(self):
         pass
 
     def find_image_transformation_2x2(self, image1, image2):
+        print("self.is_flipped(image1, image2)", self.is_flipped(image1, image2))
         if self.mse(numpy.array(image1), numpy.array(image2)) < 0.2:
             return 1
         elif self.is_rotated(image1, image2) != -1:
@@ -175,9 +158,9 @@ class Agent:
         img = numpy.array(self.flip_image(image, axis))
         for option in options:
             option_img = numpy.array(option)
-            print("mse flip ", self.mse(img, option_img))
             if self.mse(img, option_img) < 10:
                 return options.index(option) + 1
+        # return -1
         pass
 
     def find_rotated_image(self, image, options, angle):
@@ -198,12 +181,13 @@ class Agent:
                 return angle
         return -1
 
+
     def is_flipped(self, image1, image2):
         horizontally_flipped_image1 = numpy.array(self.flip_image(image1, 1))
         vertically_flipped_image1 = numpy.array(self.flip_image(image1, 0))
 
-        print("vertical flipped", self.mse(vertically_flipped_image1, numpy.array(image2)))
-        print("horizontally flipped", self.mse(horizontally_flipped_image1, numpy.array(image2)))
+        # print("vertical flipped", self.mse(vertically_flipped_image1, numpy.array(image2)))
+        # print("horizontally flipped", self.mse(horizontally_flipped_image1, numpy.array(image2)))
 
         if self.mse(vertically_flipped_image1, numpy.array(image2)) < 75:
             return 2
