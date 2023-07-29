@@ -41,6 +41,7 @@ class Agent:
         self.option6 = [],
         self.option7 = [],
         self.option8 = []
+
         pass
 
     # The primary method for solving incoming Raven's Progressive Matrices.
@@ -63,6 +64,10 @@ class Agent:
                 return ans
             else:
                 return 4
+        elif problem.problemType == "3x3" and "Problems C" in problem.problemSetName:
+            ans = self.solve_problem_3x3(problem)
+            print("ans is", ans)
+            return ans
         else:
             ans = 1
             return ans
@@ -107,8 +112,35 @@ class Agent:
         elif transformation_a_c != -1:
             return self.map_transformation_to_options(transformation_a_c, self.imageB)
 
+    def solve_problem_3x3(self, ravens_problem):
+        self.pre_process_images(ravens_problem, "3x3")
 
-    def solve_problem_3x3(self):
+        ans = 7
+
+        options = [self.option1, self.option2, self.option3, self.option4, self.option5, self.option6]
+
+        # ans = self.is_similar_row_images(self.imageA, self.imageB, self.imageC)
+        # print("Is True", self.is_similar_row_images(self.imageA, self.imageB, self.imageC))
+
+        if self.is_similar_row_images(self.imageA, self.imageB, self.imageC):
+            ans = self.find_horizontal_similar_image(self.mse(numpy.array(self.imageG), numpy.array(self.imageH)),
+                                                     self.imageH, options)
+            print("3x3 similar image", ans)
+
+        return ans
+        pass
+
+    def is_similar_row_images(self, image1, image2, image3):
+        if self.mse(numpy.array(image1), numpy.array(image2)) == self.mse(numpy.array(image2), numpy.array(image3)):
+            return True
+
+    def find_horizontal_similar_image(self, mse, image2, options):
+        for option in options:
+            if mse == self.mse(numpy.array(image2), numpy.array(option)):
+                return options.index(option) + 1
+        pass
+
+    def is_similar_column_images(self):
         pass
 
     def find_image_transformation_2x2(self, image1, image2):
@@ -121,14 +153,13 @@ class Agent:
         else:
             return -1
 
-
         # return -1
 
     def map_transformation_to_options(self, transformation, image):
 
         options = [self.option1, self.option2, self.option3, self.option4, self.option5, self.option6]
 
-        print("Transformation  is", transformation)
+        # print("Transformation  is", transformation)
 
         if transformation == 1:
             # Equal Image
@@ -211,4 +242,9 @@ class Agent:
         return err
         pass
 
+    # /* Code Ends Here */
+
+    # /*BEGIN CODE FROM(https://www.geeksforgeeks.org/calculate-the-euclidean-distance-using-numpy/) */
+    def calculate_euclidean_distance(self, point1, point2):
+        return numpy.sqrt(numpy.sum((point1 - point2) ** 2))
     # /* Code Ends Here */
