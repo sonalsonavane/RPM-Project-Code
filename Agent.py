@@ -66,10 +66,6 @@ class Agent:
         else:
             ans = 1
             return ans
-        # if problem.problemType == "2x2":
-        #     ans = self.solve_problems_B(problem)
-        #     print("ans is", ans)
-        #     return ans
 
     # elif problem.problemType == "3x3" and "Problems C" in problem.problemSetName:
     #     print("This is Problem C", problem.problemSetName)
@@ -77,7 +73,6 @@ class Agent:
     #     print("This is problem set D and E", problem.problemSetName)
 
     def pre_process_images(self, ravens_problem, problem_type):
-        # for key, value in ravens_problem.figures.items():
         # Problem Images
         self.imageA = Image.open(ravens_problem.figures['A'].visualFilename).convert('L')
         self.imageB = Image.open(ravens_problem.figures['B'].visualFilename).convert('L')
@@ -90,10 +85,6 @@ class Agent:
         self.option4 = Image.open(ravens_problem.figures['4'].visualFilename).convert('L')
         self.option5 = Image.open(ravens_problem.figures['5'].visualFilename).convert('L')
         self.option6 = Image.open(ravens_problem.figures['6'].visualFilename).convert('L')
-
-        # self.option6 = Image.open(ravens_problem.figures['6'].visualFilename).convert('L')
-        # option6_array = numpy.array(self.option6)
-        # print(option6_array)
 
         if problem_type == '3x3':
             self.imageD = Image.open(ravens_problem.figures['D'].visualFilename).convert('L')
@@ -128,8 +119,6 @@ class Agent:
             return self.is_flipped(image1, image2)
         else:
             return -1
-
-        pass
 
     def map_transformation_to_options(self, transformation, image):
 
@@ -187,8 +176,6 @@ class Agent:
             # print("mse value", self.mse(rotated_image, img2))
             if self.mse(rotated_image, img2) <= 11:
                 return angle
-        return -1
-
 
     def is_flipped(self, image1, image2):
         horizontally_flipped_image1 = numpy.array(self.flip_image(image1, 1))
