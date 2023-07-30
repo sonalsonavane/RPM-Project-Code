@@ -1,26 +1,10 @@
-# Your Agent for solving Raven's Progressive Matrices. You MUST modify this file.
-#
-# You may also create and submit new files in addition to modifying this file.
-#
-# Make sure your file retains methods with the signatures:
-# def __init__(self)
-# def Solve(self,problem)
-#
-# These methods will be necessary for the project's main method to run.
+import math
 from PIL import Image
 import numpy
 
 
-# Install Pillow and uncomment this line to access image processing.
-# from PIL import Image
-# import numpy
-
 class Agent:
-    # The default constructor for your Agent. Make sure to execute any
-    # processing necessary before your Agent starts solving problems here.
-    #
-    # Do not add any variables to this signature; they will not be used by
-    # main().
+
     def __init__(self):
         # Problem Images
         self.imageA = [],
@@ -44,30 +28,34 @@ class Agent:
 
         pass
 
-    # The primary method for solving incoming Raven's Progressive Matrices.
-    # For each problem, your Agent's Solve() method will be called. At the
-    # conclusion of Solve(), your Agent should return an int representing its
-    # answer to the question: 1, 2, 3, 4, 5, or 6. Strings of these ints 
-    # are also the Names of the individual RavensFigures, obtained through
-    # RavensFigure.getName(). Return a negative number to skip a problem.
-    #
-    # Make sure to return your answer *as an integer* at the end of Solve().
-    # Returning your answer as a string may cause your program to crash.
     def Solve(self, problem):
-        # if problem.problemType == "2x2" and "Problems B" in problem.problemSetName and "Basic Problem B-06" in problem.name:
         if problem.problemType == "2x2":
+            print(problem.name)
             ans = self.solve_problems_B(problem)
-            # print(problem.name)
-            # print("ans is", ans)
-            # is_one = ans is None
+            print("ans is", ans)
             if ans is not None:
                 return ans
             else:
-                return 4
-        elif problem.problemType == "3x3" and "Problems C" in problem.problemSetName:
+                return 1
+        # elif problem.problemType == "3x3" and "Problems C" in problem.problemSetName:
+        elif problem.problemType == "3x3":
             ans = self.solve_problem_3x3(problem)
-            print("ans is", ans)
-            return ans
+            if ans is not None:
+                return ans
+            else:
+                return 1
+        # elif problem.problemType == "3x3" and "Problems D" in problem.problemSetName:
+        #     ans = self.solve_problem_3x3(problem)
+        #     if ans is not None:
+        #         return ans
+        #     else:
+        #         return 5
+        # elif problem.problemType == "3x3" and "Problems E" in problem.problemSetName:
+        #     ans = self.solve_problem_3x3(problem)
+        #     if ans is not None:
+        #         return ans
+        #     else:
+        #         return 4
         else:
             ans = 1
             return ans
@@ -106,7 +94,6 @@ class Agent:
         self.pre_process_images(ravens_problem, "2x2")
         transformation_a_b = self.find_image_transformation_2x2(self.imageA, self.imageB)
         transformation_a_c = self.find_image_transformation_2x2(self.imageA, self.imageC)
-
         if transformation_a_b != -1:
             return self.map_transformation_to_options(transformation_a_b, self.imageC)
         elif transformation_a_c != -1:
@@ -114,8 +101,13 @@ class Agent:
 
     def solve_problem_3x3(self, ravens_problem):
         self.pre_process_images(ravens_problem, "3x3")
-
-        ans = 7
+        ans = 1
+        # if "Problems D" in ravens_problem.problemSetName:
+        #     ans = 4
+        # if "Problems E" in ravens_problem.problemSetName:
+        #     ans = 7
+        # if "Problems C" in ravens_problem.problemSetName:
+        #     ans = 2
 
         options = [self.option1, self.option2, self.option3, self.option4, self.option5, self.option6]
 
@@ -125,8 +117,20 @@ class Agent:
         if self.is_similar_row_images(self.imageA, self.imageB, self.imageC):
             ans = self.find_horizontal_similar_image(self.mse(numpy.array(self.imageG), numpy.array(self.imageH)),
                                                      self.imageH, options)
+        if self.calculate_dark_pixel_ratio(self.imageA, self.imageE) == 0:
+            diagonal_ans = self.find_diagonal_similar_images(options)
+            if diagonal_ans is None:
+                ans = diagonal_ans
 
-        print("3x3 similar image", ans)
+        mse1 = math.ceil(self.mse(numpy.array(self.imageB), numpy.array(self.imageD)) / 100)
+        mse2 = math.ceil(self.mse(numpy.array(self.imageH), numpy.array(self.imageF)) / 100)
+        if self.compare_two_mse(mse1, mse2) <= 5:
+            ans = self.find_diagonal_corner_similar_images(options)
+
+        # self.calculate_dark_pixel_ratio(self.imageA, self.imageB)
+
+        # print("diagonal", ans)
+        # print(ravens_problem.name)
         return ans
         pass
 
@@ -134,14 +138,38 @@ class Agent:
         if self.mse(numpy.array(image1), numpy.array(image2)) == self.mse(numpy.array(image2), numpy.array(image3)):
             return True
 
+    def find_image_D_2x2(self, options):
+        difference1 = self.calculate_dark_pixel_ratio(self.imageA, self.imageB)
+        difference2 = self.calculate_dark_pixel_ratio(self.imageA, self.imageC)
+
+        for option in options:
+            difference3 = self.calculate_dark_pixel_ratio(self.imageC, option)
+            difference4 = self.calculate_dark_pixel_ratio(self.imageB, option)
+            print(difference1, difference3, difference2, difference4)
+            if difference1 == difference3 or difference2 == difference4:
+                return options.index(option) + 1
+        pass
+
     def find_horizontal_similar_image(self, mse, image2, options):
         for option in options:
             if mse == self.mse(numpy.array(image2), numpy.array(option)):
                 return options.index(option) + 1
         pass
 
-    def is_similar_column_images(self):
-        pass
+    def find_diagonal_similar_images(self, options):
+        mse1 = math.ceil(self.mse(numpy.array(self.imageA), numpy.array(self.imageE)) / 100)
+        for option in options:
+            mse2 = math.ceil(self.mse(numpy.array(self.imageA), numpy.array(option)) / 100)
+            # print(mse1, mse2)
+            if abs(mse2 - mse1) < 25:
+                return options.index(option) + 1
+
+    def find_diagonal_corner_similar_images(self, options):
+        mse1 = math.ceil(self.mse(numpy.array(self.imageA), numpy.array(self.imageG)) / 100)
+        for option in options:
+            mse2 = math.ceil(self.mse(numpy.array(self.imageC), numpy.array(option)) / 100)
+            if mse1 != mse2 and abs(mse1 - mse2 < 10):
+                return options.index(option) + 1
 
     def find_image_transformation_2x2(self, image1, image2):
         if self.mse(numpy.array(image1), numpy.array(image2)) < 0.2:
@@ -176,8 +204,9 @@ class Agent:
             ans = self.find_flipped_image(image, options, 1)
             return ans
             # flip images
-        # else:
-        #     return 1
+        else:
+            ans = self.find_image_D_2x2(options)
+            return ans
 
     def find_equal_image(self, image, options):
         img = numpy.array(image)
@@ -216,10 +245,6 @@ class Agent:
     def is_flipped(self, image1, image2):
         horizontally_flipped_image1 = numpy.array(self.flip_image(image1, 1))
         vertically_flipped_image1 = numpy.array(self.flip_image(image1, 0))
-
-        # print("vertical flipped", self.mse(vertically_flipped_image1, numpy.array(image2)))
-        # print("horizontally flipped", self.mse(horizontally_flipped_image1, numpy.array(image2)))
-
         if self.mse(vertically_flipped_image1, numpy.array(image2)) < 75:
             return 2
         elif self.mse(horizontally_flipped_image1, numpy.array(image2)) < 75:
@@ -247,4 +272,20 @@ class Agent:
     # /*BEGIN CODE FROM(https://www.geeksforgeeks.org/calculate-the-euclidean-distance-using-numpy/) */
     def calculate_euclidean_distance(self, point1, point2):
         return numpy.sqrt(numpy.sum((point1 - point2) ** 2))
+
     # /* Code Ends Here */
+
+    # /*BEGIN CODE FROM(https://stackoverflow.com/questions/60664003/how-do-i-get-the-count-dark-pixel-of-an-image-with-numpy) */
+    def calculate_dark_pixel_ratio(self, image1, image2):
+        total_pixels_image1 = numpy.array(image1)
+        total_pixels_image2 = numpy.array(image2)
+        dark_pixels1 = numpy.count_nonzero(total_pixels_image1 == 0)
+        dark_pixels2 = numpy.count_nonzero(total_pixels_image2 == 0)
+        total = abs(dark_pixels1 - dark_pixels2)
+        return total
+
+    # /* Code Ends Here */
+
+    def compare_two_mse(self, mse1, mse2):
+        return abs(mse2 - mse1) < 25
+        pass
